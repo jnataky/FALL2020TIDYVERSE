@@ -478,3 +478,17 @@ Analysis of Diamond clarity and depth correlation/frequency as well as ratio [pe
 Change Log:
 26 October: Added vignette w/ examples for purrr and forcats, Cameron Smith
 
+
+=======
+
+Jered extending Zhouxin Shi's recipe: 
+
+As Zhouxin vignette is about dplyr, I extended his work by adding 
+different other functions of the same package.
+Since the tidyverse CREATE explored the functions select() and filter(),  
+I added three other main verbs of dplyr in tidyverse EXTEND: arrange(), mutate(), and summarize().
+See the update tidyverse.RMD file for the details of my work.
+
+=======
+
+
