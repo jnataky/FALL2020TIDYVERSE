@@ -1,0 +1,66 @@
+---
+title: "Tidyverse_Vignette"
+author: "Douglas Barley"
+date: "10/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Kiva Loans
+
+Kiva loans are extremely small loans, called microloans, made to entrepreneurs who need small seed loans to start their businesses. The loans are made in order to help better communities one entrepreneur at a time. The dataset used in this vignette consists of a set of Kiva loans made in calendar year 2016 around the globe. For the purpose of this vignette, the loans data was pared down to make the file size < 25 MB.
+```{r }
+kiva <- read.csv("https://raw.githubusercontent.com/douglasbarley/FALL2020TIDYVERSE/TidyverseVignette/kiva_loans.csv")
+
+library(tidyverse)
+glimpse(kiva)
+```
+
+The 2016 data includes 197,236 observations of 14 variables.
+
+## Tidyverse group_by() function
+
+The Tidyverse contains many packages that are useful in R for cleaning and exploring data. When faced with a fairly long dataset, such as the Kiva set in this example, it is useful to be able to count the data in a single column while grouping the counts according to discrete values in that column. The `group_by` function in the `dplyr` corner of the Tidyverse helps to do just that. This helps a programmer quickly explore what is in the data.
+
+For example, it could be useful to know which countries received the most loans.
+```{r message= FALSE}
+countries <- data.frame(kiva) %>%
+  group_by(country) %>%
+      summarize(count_loans = n())
+
+head(countries)
+```
+
+## Visualizing the results
+
+Once we have a concise count of loans by country, it is helpful to be able to visualize
+all of the results in a single graphic. The `ggplot()` function, also part of the Tidyverse, is very helpful in
+the visualization realm.
+```{r}
+ggplot(data = countries) + geom_col(aes(x = country, y = count_loans)) +
+  ggtitle("Loans Disbursed by Country") +
+  coord_flip() +  
+  ylab('Loan Count') +
+  xlab('Country') 
+
+```
+
+There are so many countries where loans were disbursed that it is difficult to read each country's name. In order to simplify the listing and visualizations, let's identify the top 10 countries that received loans.
+```{r}
+countries_top10 <- head(arrange(countries,desc(count_loans)), n = 10)
+countries_top10
+```
+
+Now we can graph the top 10 countries that received loans.
+```{r}
+ggplot(data = countries_top10) + geom_col(aes(x = reorder(country, count_loans), count_loans)) +
+  ggtitle("Loans Disbursed by Country") +
+  coord_flip() +  
+  ylab('Loan Count') +
+  xlab('Country')
+```
+
+That's much more legible! Now we can see that the Philippines received the most Kiva loans of any country in 2016.

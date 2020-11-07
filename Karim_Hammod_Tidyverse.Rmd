@@ -83,6 +83,43 @@ Thanks,
 Karim Hammoud
 
 
+# Tidyverse Extend
+
+Rachel here to add some further analysis to the great work Karim has done on one of my favorite hobbies, video games!
+
+```{r}
+#create a new dataframe using the 'subset' function to select only 'modern' PC games, because I'm a PC gamer
+pc_games <- subset(video_games, Platform == "PC")
+pc_games <- subset(pc_games, Year >= 2010)
+
+#and lets remove any games with an N/A year, because that won't plot well later
+pc_games <- subset(pc_games, Year != "N/A")
+```
+
+
+Lets see how the sales by genre have changed since 2010 at all, building a animated bubble chart using the 'gganimate' library to extend ggplot2's functionality.
+
+```{r, message = FALSE}
+# package to extend ggplot2 functionality
+library(gganimate)
+
+# package that will display the animated output when you knit to HTML
+library(gifski)
+```
+
+
+```{r}
+# built a basic ggplot barchart as you usually would
+ggplot(pc_games, aes(x=Global_Sales, y=Genre, fill=Genre)) + 
+  geom_bar(stat='identity') +
+  theme_bw() +
+        
+# code specific to gganimate with "Year" as the variable it transitions on, and a label that display the years as they progress
+  transition_states(Year, transition_length = 3, state_length = 10) +
+  ease_aes('sine-in-out') + 
+  labs(title = 'PC Game Sales by Year: {closest_state}', x = 'Global Sales', y = 'Game Genre')
+
+```
 
 
 

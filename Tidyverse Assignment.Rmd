@@ -1,0 +1,134 @@
+---
+title: "Tidyverse Assignment"
+author: "Irene Jacob"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(plyr)
+library(ggplot2)
+library(DT)
+```
+
+# Goal
+
+In this assignment, you’ll practice collaborating around a code project with GitHub.  You could consider our collective work as building out a book of examples on how to use TidyVerse functions.
+
+GitHub repository:  https://github.com/acatlin/FALL2020TIDYVERSE
+
+Your task here is to Create an Example.  Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample “vignette” that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected dataset. (25 points)
+
+Later (see next assignment below), you'll be asked to extend an existing vignette.  Using one of your classmate’s examples (as created above), you'll then extend his or her example with additional annotated code. (15 points)
+
+You should clone the provided repository.  Once you have code to submit, you should make a pull request on the shared repository.  You should also update the README.md file with your example.
+
+After you’ve created your vignette, please submit your GitHub handle name in the submission link provided below. 
+
+You should complete your submission on the schedule stated in the course syllabus.
+
+# Data
+
+The dataset I chose is from the kaggle datasets.
+
+It can be accessed [**here**](https://www.kaggle.com/ronitf/heart-disease-uci)
+
+# Reading the data from Github
+
+```{r}
+tidyverse_data <- read.csv("https://raw.githubusercontent.com/irene908/DATA-607/master/tidyverse_dataset.csv")
+datatable(tidyverse_data)
+```
+
+I thought of renaming the columns to better understand the dataset columns.
+
+```{r}
+names (tidyverse_data) <- c("Age","Sex", "Chest_Pain_Type","Resting_Blood_Pressure","Serum_Cholesterol","Fasting_Blood_Sugar","Resting_Electrocardiographic_Results","Maximum_Heart_Rate_Achieved","Exercise_Induced_Angina","ST_Depression","Peak_Exercise_ST_Segment_Slope","Major_Vessels", "Thal","Target")
+datatable(tidyverse_data)
+```
+
+# Dplyr package
+
+The package I chose is dplyr from the Tidyverse package.
+
+I have decided to demonstrate 3 capabilities namely - select(), summarise() and filter()
+
+## 1: select()
+
+### Short Description
+
+When a certain set of columns are only required select() is used. The columns mentioned within the select() will be returned.
+
+### Syntax
+
+select(.data, ...)
+
+Here,
+
+.data : It can be a data frame, tibble etc
+
+... : It can be the variables or columns names that are to be returned. They are separated using a comma.
+
+### Demo
+
+```{r select}
+tidyverse_select <- select(tidyverse_data, c("Age", "Target"))
+datatable(tidyverse_select)
+```
+
+## 2: summarise()
+
+### Short Description
+
+A new data frame is created by summarise(). It contains one row for each grouping variable. One column is present for the grouping variable and one column for summary.
+
+### Syntax
+
+summarise(.data, ..., .groups = NULL)
+
+summarize(.data, ..., .groups = NULL)
+
+summarise() and summarize() are synonyms.
+
+Here,
+
+.data : It can be a data frame, tibble etc
+
+... : Name-value pair of summary functions
+
+.groups : It is the grouping structure of the result
+
+### Demo
+
+```{r summarise}
+tidyverse_sum <- summarise(tidyverse_data, Max = max(Maximum_Heart_Rate_Achieved), Min = min(Maximum_Heart_Rate_Achieved), Mean = mean(Maximum_Heart_Rate_Achieved))
+datatable(tidyverse_sum)
+```
+
+## 3: filter()
+
+### Short Description
+
+Rows that satisfy a given condition are returned using filter().
+
+### Syntax
+
+filter(.data, ..., .preserve = FALSE)
+
+Here,
+
+.data : It can be a data frame, tibble etc
+
+... : Expressions that are variables of .data and return a logical value. If more than one expression is involved they are combined using & operator. Rows that return TRUE are returned.
+
+.preserve : used when .data is grouped. 
+
+### Demo
+
+```{r filter}
+tidyverse_filter <- filter(tidyverse_data, Chest_Pain_Type<3 & Chest_Pain_Type>0)
+datatable(tidyverse_filter)
+```

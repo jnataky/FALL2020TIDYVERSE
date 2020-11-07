@@ -1,0 +1,159 @@
+---
+title: "TidyVerse EXTEND"
+author: "Stefano Biguzzi"
+date: "10/23/2020"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Part I: Arushi Arora - CREATE
+
+The following code was written by Arushi Arora on 10/23 for her TidyVerse CREATE assignment.
+
+## Introdction
+The following example from Five Thirty Eight https://fivethirtyeight.com/features/how-americans-like-their-steak/
+
+The core tidyverse package includes "readr" and "dplyr"
+"readr" provides a fast and friendly way to read rectangular data
+"dplyr" provides a grammar of data manipulation, providing a consistent set of verbs that solve the most common data manipulation 
+
+#### Importing libraries
+```{r warning=FALSE}
+if(!require('tidyverse'))install.packages('tidyverse')
+library (tidyverse)
+library(dplyr, warn.conflicts = FALSE) # for cleaning the data
+options(dplyr.summarise.inform = FALSE)
+```
+
+
+```{r warning=FALSE}
+urlfile="https://raw.githubusercontent.com/fivethirtyeight/data/master/steak-survey/steak-risk-survey.csv"
+
+steakdata<- readr::read_csv(url(urlfile))
+
+head(steakdata)
+```
+
+## Rename columns
+
+```{r warning=FALSE}
+steakdata1 = dplyr::rename(steakdata, 
+"lottery" = "Consider the following hypothetical situations: <br>In Lottery A, you have a 50% chance of success, with a payout of $100. <br>In Lottery B, you have a 90% chance of success, with a payout of $20. <br><br>Assuming you have $10 to bet, would you play Lottery A or Lottery B?", 
+"smoke_cigs" = "Do you ever smoke cigarettes?" ,
+"drink_alcohol" = "Do you ever drink alcohol?", 
+"gamble" = "Do you ever gamble?",
+"skydiving" = "Have you ever been skydiving?",
+"overspeeding" = "Do you ever drive above the speed limit?",
+"cheat_patner" = "Have you ever cheated on your significant other?",
+"eat_steak" = "Do you eat steak?",
+"steak_prep" = "How do you like your steak prepared?",
+"hh_income" = "Household Income",
+"location" = "Location (Census Region)")
+head(steakdata1)
+```
+
+## Remove first row
+
+```{r warning=FALSE}
+steakdata2 <- steakdata1[-c(1), ]
+
+head(steakdata2)
+```
+
+## Mutate Char variables to Factor
+
+```{r warning=FALSE}
+steakdata3 <- steakdata2 %>% as_tibble() 
+
+steakdata4 <- steakdata3 %>%
+  mutate(lottery = as.factor(lottery)) %>%
+  mutate(smoke_cigs = as.factor(smoke_cigs)) %>%
+  mutate(drink_alcohol = as.factor(drink_alcohol)) %>%
+  mutate(gamble = as.factor(gamble)) %>%
+  mutate(skydiving = as.factor(skydiving)) %>%
+  mutate(overspeeding = as.factor(overspeeding)) %>%
+  mutate(cheat_patner = as.factor(cheat_patner)) %>%
+  mutate(eat_steak = as.factor(eat_steak)) %>%
+  mutate(steak_prep = as.factor(steak_prep)) %>%
+  mutate(Gender = as.factor(Gender)) %>%
+  mutate(Age = as.factor(Age)) %>%
+  mutate(hh_income = as.factor(hh_income)) %>%
+  mutate(Education = as.factor(Education)) %>%
+  mutate(location = as.factor(location))
+
+  head(steakdata4)
+```
+
+# Part II: Stefano Biguzzi - EXTEND
+
+### Introduction
+Your task here is to **Extend an Existing Example**.  Using one of your classmate’s examples (as created above), extend his or her example with additional annotated code.
+
+### `ggplot()`
+Once you use `readr` and `dplyr` you can use another TidyVerse package, `ggplot`, to create visualizations with your data. The following data lends itself to bar graphs.
+
+We start out with a simple bar graph using `ggplot()` and `geom_bar()`. We set the x = to steak_prep and the y = n. In the `geom_bar()` options we add `stat = identity` to tell R that we are providing the y values for the graph.
+```{r, fig.show='asis', fig.width = 6}
+filter(steakdata4,!(is.na(steakdata4$steak_prep))) %>%
+  count(steak_prep) %>%
+  #Initiate ggplot
+  ggplot(aes(x=steak_prep,y=n)) +
+  #tell ggplot you want a bar graph
+  geom_bar(stat = 'identity') +
+  #set the theme
+  theme_bw()
+```
+
+This graph does not look particularly appealing. Luckily, `ggplot` allows for a lot of customization to spice up your plots. You can color your groups by adding the `fill=` in the aes function of `ggplot`. In our example we add `fill=steak_prep` to give each bar a separate color. We are also reordering the x-axis so the cook level is ordered in descending order.
+```{r, fig.show='asis', fig.width = 6}
+filter(steakdata4,!(is.na(steakdata4$steak_prep))) %>%
+  count(steak_prep) %>%
+  #Initiate ggplot, add color and reorder 
+  ggplot(aes(x=reorder(steak_prep,-n),y=n, fill=steak_prep, na.rm = TRUE)) +
+  #tell ggplot you want a bar graph
+  geom_bar(stat="identity", na.rm = TRUE) +
+  #set the theme
+  theme_bw()
+```
+
+`ggplot` allows you to add labels for each axis so a messy column name does not have to show up on a professional graph. In our bar example, we can add the `labs()` function for the title and the axis labels. We also added `show.legend = FALSE` since the x-axis is already acting as a sort of label.
+```{r, fig.show='asis', fig.width = 6}
+filter(steakdata4,!(is.na(steakdata4$steak_prep))) %>%
+  count(steak_prep) %>%
+  #Initiate ggplot, add color and reorder 
+  ggplot(aes(x=reorder(steak_prep,-n),y=n)) +
+  #tell ggplot you want a bar graph
+  geom_bar(aes(fill=steak_prep), stat="identity", show.legend = FALSE) +
+  #add titles
+  labs(title = "Count of steak prep", x = "Steak Prep", y = "Counts") +
+  #set the theme
+  theme_bw()
+```
+
+The theme options in `ggplot` can help you further customize a plot. Let's say we like the way the black and white theme works, but we want to remove the x-axis grid. In our bar plot example below we can add an additional theme element that does just that.
+```{r, fig.show='asis', fig.width = 6}
+filter(steakdata4,!(is.na(steakdata4$steak_prep))) %>%
+  count(steak_prep) %>%
+  #Initiate ggplot, add color and reorder 
+  ggplot(aes(x=reorder(steak_prep,-n),y=n)) +
+  #tell ggplot you want a bar graph
+  geom_bar(aes(fill=steak_prep), stat="identity", show.legend = FALSE) +
+  #add titles
+  labs(title = "Count of steak prep", x = "Steak Prep", y = "Counts") +
+  #set the theme
+  theme_bw() +
+  #remove grid background
+  theme(panel.grid.major.x = element_blank())
+
+```
+
+### Conclusion
+`ggplot` is a very powerful tool for visualizations. In this example I only showed one way of visualizing data, bar plots. However, `ggplot` has a variety of layers that can be created. For a full list of available plots, or a full list of available functions to customize your plots even further you may want to read up on some [documentation](https://ggplot2.tidyverse.org/reference/).

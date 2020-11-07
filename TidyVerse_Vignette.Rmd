@@ -1,0 +1,108 @@
+---
+title: "TidyVerse Vignette"
+author: "Mustafa Telab"
+date: "10/25/2020"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Introduction
+
+The TidyVerse is a very useful and popular R package that assists in formating, manipulating, and visualizing data.  This vignette will focus on the latter.  
+
+GGplot2 is a grammatically layerd approch towards visualizations.  The combinations of the layers, features, and options are nearly endless, providing a fully customizable visual to cater any data set.  For this example, we will be using categorical information based on a Holloween Candy survey.
+
+Below is a very basic snapshot of the GGplot2 package and its potential.  Lets tackle the below concepts.
+-Set-up
+-Objects
+-Aesthetics
+-Facets
+-Coordinates
+
+```{r}
+#Calling the package
+library(tidyverse)
+#OR
+library(ggplot2)
+```
+
+
+```{r}
+library(RCurl)
+getfile <- getURL("https://raw.githubusercontent.com/fivethirtyeight/data/master/candy-power-ranking/candy-data.csv") 
+candy <- read.csv(text = getfile)
+```
+
+
+## Getting Started
+
+Assemble the basic point plot, showing candy suger percentage against winning percentage.
+```{r}
+#pass the dataset into the function
+candy%>%
+  #the "+" introduces the next layer of the visualization
+  ggplot() +
+  #now we choose the geometric shape, such as a bar graph
+  geom_point(aes(x=sugarpercent, y= winpercent))
+
+
+```
+
+## Geometric Objects
+
+```{r}
+candy%>%
+  ggplot() +
+  geom_point(aes(x=sugarpercent, y= winpercent))+
+  #we can plot the same data more than once as a different shape
+  geom_smooth(aes(x=sugarpercent, y= winpercent))
+```
+
+
+## Aesthetic
+
+Withing the aesthetic argument, we can alter color and appearance of the plot.
+```{r}
+
+candy%>%
+  ggplot() +
+  #suppose we want call out wether the point is associated with chocolate or not.
+  geom_point(aes(x=sugarpercent, y= winpercent, color = chocolate))
+  #options other than "color", include size, alpha, and shape
+```
+
+## Facets
+
+The Facet layer breaks out the plots based on specified parameters
+```{r}
+candy%>%
+  ggplot() +
+  geom_point(aes(x=sugarpercent, y= winpercent)) +
+  #We can just add on the additional layer again with the "+"
+  facet_grid(~chocolate)
+```
+
+## Coordinate
+
+Consider the coordinate layer as an option to re-shape the entire plot.
+```{r}
+candy%>%
+  ggplot() +
+  geom_point(aes(x=sugarpercent, y= winpercent)) +
+  #one of the more common options is the flip, but you also have "coord_quickmap()", "coord_polar()","coord_fixed()", etc
+  coord_flip()
+```
+
+## Conclusion
+
+Hope you enjoyed the basic introduction to GGplot2, part of the TidyVerse package.  The potential spans way beyond what is outlined above.  The package allows for scales, labeling, annotations, zooming, and additional themes.  
+
+Happy Plotting!

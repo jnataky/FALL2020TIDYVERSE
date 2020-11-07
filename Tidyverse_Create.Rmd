@@ -1,0 +1,44 @@
+
+---
+title: "TidyVerse Create"
+output: html_document
+---
+
+Overall:23/25
+I think this part , "Write a vignette using more than one TidyVerse packages" is missing in your work.
+get data from 538 
+It looks like typo...I think you are getting data from fivethirtyeight
+```{r}
+source = 'https://raw.githubusercontent.com/fivethirtyeight/covid-19-polls/master/covid_approval_polls.csv'
+#read data into data frame
+df = read.csv(source)
+
+#I think the above 02 line can be resume with one as follow below
+df <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/covid-19-polls/master/covid_approval_polls.csv")
+df
+#I think maybe looking at data details can help you shape your approach
+str(df)
+#the dimension of the data: 2008 obs. of  13 variables:
+
+```
+
+Demonstrate functions in tidyverse package dplyr
+```{r}
+library("dplyr")
+#Relocate changes the order of the columns
+#the first argument should be the data set, the 2nd is the column you want to move, the third is a how you want to move it.  For this, i chose .after, which will place it after the specific column chosen for this parameter.
+new_df = relocate(df, pollster, .after = start_date)
+new_df
+#count counts observations by group
+#the first argument should be the data set, the 2nd is the column you want to group by, and the third is if you want to sort or not.
+count(new_df, population, sort=TRUE)
+```
+
+Demonstrate functions in tidyverse package ggplot2
+```{r}
+library("ggplot2")
+# Create a scatter plot
+#the first argument should be the data set, the 2nd is the x axis variable, and the third is the y axis variable.
+# Maybe including the title
+ggplot(new_df, aes(x=population, y=sample_size)) + geom_bar(stat="identity")
+```

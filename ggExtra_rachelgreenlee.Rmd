@@ -1,0 +1,186 @@
+---
+title: "Using ggExtra for Exploratory Plotting (tidyverse create assignment)"
+author: "Rachel Greenlee"
+date: "10/24/2020"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Introduction
+
+This vignette will take a quick peek at two useful data exploration plot types provided in the ggExtra package using a UFO sightings dataset. We aren't going to worry about style or labels, just some quick plots to explore your data well before further analysis and presenting findings to others.
+
+
+### Setup
+To have some fun, I picked a UFO dataset I found on Kaggle. 
+
+```{r}
+ufo <- read.csv(url("https://raw.githubusercontent.com/rachel-greenlee/data607/master/supports/ufo.csv"))
+```
+
+
+Let's load the needed libraries.
+
+```{r, message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+And here is a glimpse at the data.
+
+```{r}
+glimpse(ufo)
+```
+
+
+We need to clean up the dataframe so we have good clean variables to plot.
+
+```{r}
+#set datetime as a datetime varirable
+ufo$datetime <- as.POSIXct(ufo$datetime, format="%m/%d/%Y %H:%M", tz=Sys.timezone())
+
+#set seconds as numeric
+ufo$duration..seconds. <- as.numeric(ufo$duration..seconds.)
+
+#convert from seconds to minutes for readability 
+ufo$duration_mins <- ufo$duration..seconds. / 60
+
+#subset for just the variables we are eniterested in
+ufo <- ufo[c("datetime", "state", "country", "shape", "duration_mins")]
+
+#make a year only variable
+ufo$year <- format(as.Date(ufo$datetime, format="%m/%d/%Y %H:%M"),"%Y")
+ufo$year <- as.numeric(ufo$year)
+
+```
+
+Take one more glimpse at the data now that it's cleaned up.
+
+```{r}
+glimpse(ufo)
+```
+
+
+### Plot histograms or boxplots on scatterplot axis
+
+
+```{r, message=FALSE, warning=FALSE}
+library(ggExtra)
+```
+
+Here we can create the base of the chart and store it in "g", and then uses the ggMarginal function from the ggExtra package to create a scatterplot that has histograms along each axis. You can also swap out type = "histogram" for "barplot". 
+
+```{r, warning = FALSE}
+#it is common to store the base of your graph in something like "g" and then add the more advanced graph features to thase base
+g <- ggplot(ufo, aes(x = year, y = duration_mins, color = country)) +
+  geom_count() 
+
+ggMarginal(g, type = "histogram", fill = "transparent")
+```
+
+We see above that we have some intense outliers with regards to the duration, we can set the y axis to 1 hour (60 minutes) if we want to zoom in. Let's try that boxplot too.
+
+```{r, warning = FALSE}
+#adding ylim to greatly decrease the y axis, so we can zoom in on the majority of the data points without changing our dataframe
+g <- ggplot(ufo, aes(x = year, y = duration_mins, color = country)) +
+  geom_count() +
+  ylim(0, 60)
+
+ggMarginal(g, type = "boxplot", fill = "transparent")
+```
+
+
+### Super quick frequency plots
+
+Another great feature in the ggExtra package is the ability to plot super quick frequency plots without having to manipulate your dataframe first.
+
+```{r}
+#when you have a lot of labels they can be hard to read on the xaxis, coord_flip will swap the axis
+plotCount(table(ufo$shape)) +
+  coord_flip()
+```
+
+```{r}
+plotCount(table(ufo$country)) +
+  coord_flip()
+```
+
+
+### Tidyverse extend
+
+Rachel's choice in UFO data and the ggExtra package caught my eye. Interesting data and further visualization skills - yes please :) Let's explore!
+
+Based on Rachel's final plot we observe that the clear majority of activity was focused in the US. Where exactly was it concentrated though?
+
+We explore this question via the plotCount() function for frequency plot and the removeGrid() function to see the plot without grid lines:
+
+```{r}
+
+#subset our data to focus only on US data
+ufo_us <- ufo[ which(ufo$country=='us'), ]
+
+#plot the count per state
+p <- plotCount(table(ufo_us$state)) +
+  coord_flip()
+
+#remove grid lines
+p + removeGrid()
+
+```
+From the above plot, we see that the most active states are California, Washington, Florida, Texas, and Nevada.
+
+We can thus subset our data once again to focus exclusively on these states when we revisit the marginal plot (50 colors / variables would have been a bit much):
+
+```{r}
+#subset our data to focus on the most active states
+ufo_us2 <- ufo[ which(ufo$state=='ca' | ufo$state=='wa' | ufo$state=='fl' | ufo$state=='tx' | ufo$state=='nv'), ]
+
+```
+
+At this point, we're ready to re-plot ...
+
+We plot the duration of a sighting vs. the year of the sighting, this time with the state the activity was reported under as the color-coding. We then revisit the ggMarginal() function by plotting a histogram without fill on the axes:
+
+```{r, warning = FALSE}
+g2 <- ggplot(ufo_us2, aes(x = year, y = duration_mins, color = state)) +
+  geom_count() +
+  ylim(0, 60)
+
+ggMarginal(g2, type = "histogram", fill = "transparent")
+```
+
+It's interesting to note that the first recorded report (in our dataset) is from 1925 in Texas and that the count increased dramatically as we neared and then passed the year 2000.
+
+> Are people more seeking of attention or has UFO activity really spiked?
+
+...
+
+In addition to the ggMarginal plot from above, I thought it might be interesting to explore different variables and a different style of plot with the US data.
+
+We plot the datetime of a sighting vs. the shape of the reported UFO. We then revisit the ggMarginal() function (again), this time as a densigram:
+
+```{r, warning = FALSE}
+g2 <- ggplot(ufo_us2, aes(x = shape, y = datetime, color = state)) +
+  geom_count()
+
+ggMarginal(g2 + rotateTextX(), type = "densigram", fill = "transparent")
+```
+
+With regard to datetime, it tells us the same thing that we observed before, that the duration of reports increased near and after the year 2000. It is interesting to observe the difference in densities based on shapes in this era though.
+
+It's also interesting to note the variance of reported shapes of these UFOs as time progressed. It seems the most common reports are "light", "formation", "fireball", and "circle".
+
+All-in-all this was a very interesting dataset and library to explore and I'm thankful that Rachel elected it in the first place and provided me the opportunity to extend the vignette. Hope this was as interesting for you to peruse as it was for me!

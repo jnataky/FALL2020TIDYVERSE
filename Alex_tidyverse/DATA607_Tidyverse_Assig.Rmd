@@ -1,0 +1,230 @@
+---
+vignette: |
+  %\VignetteIndexEntry{Working Tidyverse: readr, dplyr, stringr} %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
+author: "Alexis Mekueko"
+date: "10/27/2020"
+output:
+  html_document:
+    df_print: paged
+  rmarkdown::html_vignette: default
+  css: style.css
+  pdf_document: default
+  vignette: default
+title: 'Working Tidyverse: readr, dplyr, stringr'
+---
+
+
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>")
+options(tibble.print_min = 6, tibble.print_max = 6)
+```
+
+<!-- ```{r setup, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = TRUE) -->
+<!-- ``` -->
+
+# R Packages
+
+```{r load-packages, message=FALSE}
+
+library(tidyverse) #loading all library needed for this assignment
+#library(openintro)
+#library(psych)
+#head(fastfood)
+library(readxl)
+#library(data.table)
+#library(DT)
+library(knitr)
+
+library(readr)
+#library(plyr)
+library(dplyr)
+library(stringr)
+#library(XML)
+#library(RCurl)
+#library(jsonlite)
+#library(httr)
+
+#library(maps)
+#library(dice)
+# #library(VennDiagram)
+# #library(help = "dice")
+#ibrary(DBI)
+#library(dbplyr)
+
+# library(rstudioapi)
+# library(RJDBC)
+# library(odbc)
+# library(RSQLite)
+# #library(rvest)
+
+
+#library(DATA606)
+
+library(knitLatex)
+#library(knitr)
+library(markdown)
+library(rmarkdown)
+#render("DATA606_Project_Proposal.Rmd", "pdf_document")
+
+```
+
+Github Link: https://github.com/asmozo24/DATA607_Tidyverse-CREATE-Assignmen
+
+Web link: https://rpubs.com/amekueko/682620
+
+
+data source: https://www.kaggle.com/omarhanyy/500-greatest-songs-of-all-time
+
+
+
+
+
+# Description
+This assignment is about getting familiar with two or more Tidyverse packages. So, I am going to write a vignette using readr, dplyr , and stringr which are part of the core tidyverse packages used for data analysis.
+
+# readr 
+According to tidyverse.org, readr provides a fast and friendly way to read rectangular data (like csv, tsv, and fwf). It is designed to flexibly parse many types of data found in the wild, while still cleanly failing when data unexpectedly changes. The required package for readr is under the tidyverse package (install.packages("tidyverse")) or you can just install single readr with install.packages("readr"). There is cheat sheet (https://github.com/rstudio/cheatsheets/blob/master/data-import.pdf) which can be helpful at a time. 
+For this assignment, I will practice reading and saving csv file.  
+
+
+```{r}
+
+
+# load the csv file which has all the variable.
+
+Top_500Songs <- read.csv("https://raw.githubusercontent.com/asmozo24/DATA607_Tidyverse-CREATE-Assignmen/main/Top%20500%20Songs.csv", stringsAsFactors=FALSE)
+
+Top_500Songs
+
+
+```
+
+```{r}
+
+str(Top_500Songs)
+#view(Top_500Songs)
+
+# file to big, cleaning/removing the column I don't need
+Top_500Songs <- Top_500Songs [, -2]
+# saving the new csv file 
+write.csv(Top_500Songs,'Top_500Songs.csv')
+
+glimpse(Top_500Songs)
+#view(Top_500Songs)
+
+
+```
+
+
+```{r}
+
+Top_500Songs 
+
+```
+
+# dplyr 
+According to tidyverse.org, dplyr provides a grammar of data manipulation, providing a consistent set of verbs that solve the most common data manipulation challenges. package for dplyr is uner tidyverse or single installation similar to readr. dplyr offers some verbs used for data manipulation:
+mutate(): uses this verb to add new variable based on the manipulation of the existing variables.
+select(): lets you select specific variables of your interest.
+filter(): similar to select, just that this verb goes into the variable and picks your value (s) of interest.
+summarise(): provides a summary of your dataframe.
+arrange(): this verb is good for ordering of rows in your dataframe.
+
+Based on previous assginments, I can say dply syntax eliminate the need to use '$' which is used in the base function. In addition multiple verbs can be used or group together with %>%.
+
+
+```{r , class.output="scroll-200"}
+
+# let's check if there is a missing value in a specific column
+# return 06 rows with empty values...tempted to delete data but will not do it now....no need
+Top_500Songs %>% 
+  filter( is.na(streak) | streak == "") 
+# another way
+filter(Top_500Songs, is.na(streak) | streak == "")
+filter(Top_500Songs, !grepl("weeks", streak))
+
+ 
+# Being in the top 500 greatest songs of all time, I will assum the song hits the hit parade of billboard for few months...lets check that
+Top_500Songs %>% 
+  select(streak)%>% 
+  filter(grepl("weeks", streak))
+
+# what if I want to find the songs that stayed on top for longest period...this is like string search comparison which is bit tidious 
+# I think a manual search and create a new variable called ranking
+
+Top_500Songs %>% 
+  select(streak)%>% 
+  filter(grepl( "No. 1", streak))
+
+# or but not really helpful ...the nature of the data
+songRank <- Top_500Songs %>% 
+  arrange(desc(streak))
+
+#view(songRank)  ...if streak was numerical ...this would be perfect
+
+Top_500Songs %>% 
+  mutate(rank = min_rank(desc(streak)))%>% 
+  arrange(desc(rank))
+
+# let's check if R.Kelly is on the list
+Top_500Songs %>% 
+  filter(artist == "R. Kelly" )
+
+# let's say I only want to see R.Kelly record (song title , release date and streak)
+Top_500Songs %>% 
+  select(title, artist, released, streak) %>% 
+  filter(artist == "R. Kelly")
+
+# How about I add a new variable which shows R.Kelly youtube view of the title song.
+#Top_500Songs %>% 
+#  mutate(youtubeView = ifelse(filter(Top_500Songs, artist == "R. Kelly"), "R.Kelly: 232,560,092" ))
+# https://www.youtube.com/watch?v=y6y_4_b6RS8
+
+
+```
+
+# stringr
+
+According to tidyverse.org, stringr provides a cohesive set of functions designed to make working with strings as easy as possible. It is built on top of stringi, which uses the ICU C library to provide fast, correct implementations of common string manipulations. 
+the required package comes under tidyverse package or single stringr. helpful, cheat sheet...https://github.com/rstudio/cheatsheets/blob/master/strings.pdf
+
+
+```{r}
+
+#let say I want to check my favorite artist and I don't remember their full name
+Top_500Songs %>% 
+  #select(artist) %>% 
+  filter(grepl("50 Cent", artist))
+
+artist <- unlist(Top_500Songs %>% 
+  #select(artist) %>% 
+  filter(grepl("50 Cent", artist)))
+
+# another way to detect matching pattern
+str_detect(artist, "Rich")
+
+# find a matching pattern and display/extract 
+str_subset(artist, "Dr.")
+
+# Find the length of a vector
+str_length(artist)
+
+#string count 
+str_count(artist, "Dr.")
+
+# convert string to upper case 
+str_to_upper(artist)
+
+# convert string to lower case 
+str_to_lower(artist)
+
+#string view
+#str_view(artist, "Cent")
+str_match(artist, 'Cent')
+
+```
+
+## Conclusion
+I think readr and dplyr are inevitable in R analysis. stringr is more focus on doing search or learning about a particular variable.

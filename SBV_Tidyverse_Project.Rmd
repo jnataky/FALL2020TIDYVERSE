@@ -1,0 +1,106 @@
+---
+title: "Tidyverse CREATE Assignment"
+author: "Stefano Biguzzi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Assignment
+In this assignment we were asked to create a vignette to discuss one or more packages within the tidyverse library. For this assignment I chose to look at the `dplyr` library specifically the `group_by()`, `tally()`, and the `summarise()` functions.
+
+
+# `tidyverse`
+## Intro
+We'll start the assignment with loading the `tidyverse` package. `tidyverse` encompasses 8 different packages. Some of them are:  
+
+* `ggplot2` - for visualization
+* `stringr` - for string manipulation
+* `tidyr` - for data cleaning and tidying
+* `dplyr` - for data manipulation
+* `readr` - for reading in rectangular data like csv
+
+## Loading
+Below is the full list of the 8 packages that the `tidyverse` library includes
+```{r, warning=F}
+library(tidyverse)
+```
+Then load in the example data that was downloaded from [Kaggle](https://www.kaggle.com/andrewmvd/heart-failure-clinical-data)
+```{r}
+heart_failure <- read.csv(url("https://raw.githubusercontent.com/sbiguzzi/FALL2020TIDYVERSE/master/heart_failure_clinical_records_dataset.csv"))
+```
+```{r, echo=F}
+column_list <- c("anaemia","diabetes","high_blood_pressure","smoking","DEATH_EVENT")
+for(i in column_list){
+  heart_failure[[i]] <- ifelse(heart_failure[[i]]==1,i,paste0("no_",i))
+}
+heart_failure$sex <- ifelse(heart_failure$sex==0,"Female","Male")
+
+rm(i, column_list)
+```
+## The `dplyr` library
+`dplyr` is the `tidyverse`'s data manipulation package. It encompasses many functions or *verbs* that can be used to solve some common data manipulation tasks. The verbs I want to focus on today are:  
+
+* `group_by()`
+* `tally()`
+* `summarise()`
+
+### `group_by()`
+One of the most powerful function of dplyr library is the `group_by()`. It takes a data frame and allows you to group by one or more variables in the data frame.^[group_by() is usually used to group by a character variable]
+```{r}
+by_sex <- heart_failure %>% group_by(sex)
+by_sex_diabetes <- heart_failure %>% group_by(sex,diabetes)
+```
+
+When you print the groupings you can see the number of groups:
+```{r}
+by_sex
+```
+Notice how it says *Groups:   sex [2]*, because there are 2 groups, Female and Male. When you print the grouping by sex and diabetes you get 4 groups:
+```{r}
+by_sex_diabetes
+```
+Notice how it shows *Groups:   sex, diabetes [4]* since its doing female-diabetes, male-diabetes, female-no_diabetes, and male-no_diabetes.
+
+### `tally()`
+Tally works well with the `group_by()` verb as it allows you to count the number of rows within each group. If we go back and use the same grouping *sex* and *sex_diabetes* we see the following counts:
+```{r}
+heart_failure %>% group_by(sex) %>% tally()
+```
+We can see the 2 groups that `group_by()` create *Female* and *Male* and see the number of rows for each group.
+```{r}
+heart_failure %>% group_by(sex,diabetes) %>% tally()
+```
+Here we see the 4 groups that `group_by()` created and the number of rows for each of those.
+
+### `summarise()`
+
+The `summarise()` function allows you manipulate the data within each group. For example if you want to get the mean platelets by sex you would use `summarise()` like this:
+
+```{r, message=F}
+heart_failure %>%
+  group_by(sex) %>%
+  summarise(mean_platelets = mean(platelets))
+```
+It's possible to also get multiple statistics using the `summarise()` function. For example below I am grabbing the mean, median, min, max, and standard deviation for platelets grouped by the sex of the patient:
+```{r, message=F}
+heart_failure %>%
+  group_by(sex) %>%
+  summarise(
+    min_platelets = min(platelets),
+    max_platelets = max(platelets),
+    mean_platelets = mean(platelets),
+    median_platelets = median(platelets),
+    sd_platelets = sd(platelets)
+  )
+```

@@ -1,0 +1,52 @@
+---
+title: "Tidyverse"
+author: "Orli Khaimova"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(magrittr)
+library(tidyverse)
+```
+Overall 23/25
+I think this part, "Write a vignette using more than one TidyVerse packages" is missing in your work. 
+# I am a bit lost here...maybe telling your reader what you are about to do (Description). one or two lines...
+# R uses factors to handle categorical variables, variables that have a fixed and known set of possible values. Factors are also helpful for reordering character vectors to improve display. The goal of the forcats package is to provide a suite of tools that solve common problems with factors, including changing the order of levels or the values. Some examples include:
+https://rdrr.io/cran/forcats/f/README.md
+
+
+`fct_rev` relevels the levels of a factor in reverse order. In this case, I factored the regions and then used the function in order to put them in reverse alphabetical order. By doing so, I was able to print the regions alphabetically in the graph.
+
+`geom_pointrange` graphs the interval for the average price of avocados for each region. I had to define a ymin and ymax as well. It is useful for drawing confidence intervals and in this case the range of prices.
+
+```{r fig.height = 10, fig.width = 5}
+avocados <- read.csv("https://raw.githubusercontent.com/okhaimova/DATA-607/master/avocado.csv")
+
+# I think it is good to add some comment so that others understand better your approach or code.
+# Example here, I think you want to redefine the data type to date
+avocados$Date <- as.Date(avocados$Date)
+# redefine year (data type) to character...I thought ideally year is numerical or integer as data type.
+# So , I can see you want to do something special with year but I cannot tell
+avocados$year <- as.character(avocados$year)
+
+#Good comment
+#factors the regions and then using forcats, we reverse the order to make it z-a
+avocados$region <- avocados$region %>%
+  as.factor() %>%
+  fct_rev()
+
+#never done this long grouping for plot...looks good...actually reviewing your code kind of telling me about my own mistake...There is no way to see the result if I don't run ...I think there was option to include a sample result or html version...
+# avocados$Date vector contains about 1000 values...a little heavy...I had that problem too.
+
+avocados %>% 
+  ggplot(aes(y = AveragePrice, x = region, 
+             ymin = AveragePrice-sd(AveragePrice), ymax = AveragePrice+sd(AveragePrice))) +
+  geom_pointrange(aes(color = as.factor(region)), size =.01) +
+  ylab("Average Price") +
+  xlab("Region") +
+  ggtitle("Average Price Range") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
